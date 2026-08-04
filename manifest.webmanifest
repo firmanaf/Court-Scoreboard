@@ -4,7 +4,7 @@
   "short_name":"Court Score",
   "description":"Scoreboard untuk tenis padel, rally 21 servis, dan badminton.",
   "lang":"id-ID",
-  "start_url":"./?source=pwa&v=120",
+  "start_url":"./?source=pwa&v=130",
   "scope":"./",
   "display":"standalone",
   "display_override":["standalone","minimal-ui"],
