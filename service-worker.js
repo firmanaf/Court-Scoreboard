@@ -1,4 +1,4 @@
-const VERSION='1.2.0';
+const VERSION='1.3.0';
 const CACHE=`court-scoreboard-${VERSION}`;
 const STATIC_ASSETS=['./manifest.webmanifest','./icon.svg'];
 
@@ -13,7 +13,6 @@ self.addEventListener('activate',event=>{
     await Promise.all(keys.filter(key=>key!==CACHE).map(key=>caches.delete(key)));
     await self.clients.claim();
 
-    // Muat ulang jendela lama satu kali agar PWA terpasang tidak terus memakai HTML lama.
     const windows=await self.clients.matchAll({type:'window',includeUncontrolled:true});
     await Promise.all(windows.map(client=>{
       if(client.url.startsWith(self.registration.scope)) return client.navigate(client.url);
