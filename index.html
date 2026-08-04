@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Court Scoreboard</title>
+<meta name="theme-color" content="#07111f"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><meta name="apple-mobile-web-app-title" content="Court Score">
+<link rel="manifest" href="manifest.webmanifest"><link rel="icon" href="icon.svg"><link rel="apple-touch-icon" href="icon.svg">
+<style>
+:root{--bg:#07111f;--card:#10233a;--line:#28415d;--text:#f5f7fb;--muted:#9fb2c9;--accent:#47d7ac;--yellow:#ffd166;--red:#ff6b6b}*{box-sizing:border-box}body{margin:0;background:linear-gradient(145deg,#07111f,#0b1a2d 60%,#07111f);color:var(--text);font-family:Inter,system-ui,-apple-system,Segoe UI,sans-serif;min-height:100vh}.app{max-width:1080px;margin:auto;padding:16px 16px 40px}header{display:flex;gap:12px;align-items:center;justify-content:space-between;margin-bottom:14px}.brand{display:flex;gap:10px;align-items:center}.brand img{width:46px;height:46px}.brand h1{font-size:20px;margin:0}.brand small{color:var(--muted)}button,select,input{font:inherit}button{border:1px solid var(--line);background:#142a44;color:var(--text);border-radius:14px;padding:12px 14px;cursor:pointer;font-weight:700}button:hover{filter:brightness(1.08)}button.primary{background:var(--accent);color:#052016;border-color:transparent}.toolbar{display:grid;grid-template-columns:1fr auto auto;gap:10px;margin-bottom:14px}.toolbar select,.toolbar input{width:100%;background:#0c1c30;border:1px solid var(--line);color:var(--text);border-radius:14px;padding:12px}.scoreboard{display:grid;grid-template-columns:1fr 1fr;gap:14px}.team{background:rgba(16,35,58,.94);border:1px solid var(--line);border-radius:22px;padding:18px;min-height:310px;display:flex;flex-direction:column;justify-content:space-between}.team.serving{outline:3px solid var(--yellow)}.team input{font-size:22px;font-weight:800;text-align:center;background:transparent;border:0;border-bottom:1px solid var(--line);color:var(--text);padding:8px}.big{font-size:clamp(76px,16vw,150px);font-weight:900;line-height:1;text-align:center;letter-spacing:-5px}.sub{text-align:center;color:var(--muted);font-weight:700;min-height:24px}.pointbtn{font-size:22px;background:var(--accent);color:#052016;border:0;padding:18px}.minus{background:#203751}.info{margin-top:14px;background:rgba(16,35,58,.8);border:1px solid var(--line);border-radius:18px;padding:14px;display:grid;gap:8px}.info strong{color:var(--yellow)}.controls{display:flex;flex-wrap:wrap;gap:10px;margin-top:14px}.controls button{flex:1;min-width:130px}.settings{margin-top:14px;display:grid;grid-template-columns:repeat(4,1fr);gap:10px}.settings label{background:#0d1d31;border:1px solid var(--line);border-radius:14px;padding:10px;color:var(--muted)}.settings input,.settings select{width:100%;margin-top:6px;background:#071522;border:1px solid var(--line);color:var(--text);border-radius:10px;padding:9px}.toast{position:fixed;left:50%;bottom:20px;transform:translateX(-50%);background:#fff;color:#07111f;padding:12px 16px;border-radius:13px;font-weight:800;display:none;z-index:5}.history{font-size:13px;color:var(--muted);max-height:110px;overflow:auto}.winner{color:var(--accent);font-size:19px;font-weight:900}@media(max-width:720px){.scoreboard{grid-template-columns:1fr 1fr;gap:8px}.team{padding:12px;min-height:280px}.big{font-size:72px}.toolbar{grid-template-columns:1fr 1fr}.toolbar select{grid-column:1/-1}.settings{grid-template-columns:1fr 1fr}.brand small{display:none}.controls button{min-width:100px}}
+</style>
+</head>
+<body><div class="app">
+<header><div class="brand"><img src="icon.svg" alt=""><div><h1>Court Scoreboard</h1><small>Padel · Rally 21 · Badminton</small></div></div><button id="install" class="primary" hidden>Install App</button></header>
+<div class="toolbar"><select id="mode"><option value="tennis">Padel — skor tenis</option><option value="rally">Padel — rally 21 servis</option><option value="badminton">Badminton — rally point 21</option></select><button id="swap">Tukar sisi</button><button id="fullscreen">Layar penuh</button></div>
+<div class="scoreboard">
+<section class="team" id="cardA"><input id="nameA" value="Tim A"><div class="big" id="scoreA">0</div><div class="sub" id="subA"></div><button class="pointbtn" data-team="A">+ Poin</button><button class="minus" data-minus="A">− Koreksi</button></section>
+<section class="team" id="cardB"><input id="nameB" value="Tim B"><div class="big" id="scoreB">0</div><div class="sub" id="subB"></div><button class="pointbtn" data-team="B">+ Poin</button><button class="minus" data-minus="B">− Koreksi</button></section>
+</div>
+<div class="info"><div id="status"></div><div id="detail"></div><div class="history" id="history"></div></div>
+<div class="controls"><button id="undo">Undo</button><button id="serve">Ganti servis</button><button id="reset" style="color:var(--red)">Reset pertandingan</button></div>
+<div class="settings">
+<label>Format pertandingan<select id="bestof"><option value="3">Best of 3</option><option value="1">1 set/game</option></select></label>
+<label>Aturan deuce padel<select id="golden"><option value="1">Golden point</option><option value="0">Advantage</option></select></label>
+<label>Pemain A<input id="playersA" value="A1, A2"></label>
+<label>Pemain B<input id="playersB" value="B1, B2"></label>
+</div>
+</div><div class="toast" id="toast"></div>
+<script>
+const $=s=>document.querySelector(s),clone=o=>JSON.parse(JSON.stringify(o));
+const fresh=()=>({mode:'tennis',names:{A:'Tim A',B:'Tim B'},players:{A:['A1','A2'],B:['B1','B2']},serve:'A',sets:{A:0,B:0},games:{A:0,B:0},points:{A:0,B:0},tb:false,rallyCount:0,rally:{A:0,B:0},bad:{A:0,B:0},history:[],stack:[],finished:false,winner:null,bestof:3,golden:true});
+let S;try{S={...fresh(),...JSON.parse(localStorage.getItem('court-scoreboard')||'{}')}}catch{S=fresh()}let deferredPrompt=null;
+const tennisLabels=['0','15','30','40'];
+function save(){localStorage.setItem('court-scoreboard',JSON.stringify(S))}
+function snap(){S.stack.push(clone({...S,stack:[]}));if(S.stack.length>40)S.stack.shift()}
+function toast(t){const e=$('#toast');e.textContent=t;e.style.display='block';clearTimeout(toast.t);toast.t=setTimeout(()=>e.style.display='none',1800)}
+function wonMatch(team){S.finished=true;S.winner=team;toast(S.names[team]+' menang pertandingan')}
+function requiredWins(){return S.bestof===1?1:2}
+function addTennis(t){if(S.finished)return;snap();const o=t==='A'?'B':'A';if(S.tb){S.points[t]++;if(S.points[t]>=7&&S.points[t]-S.points[o]>=2){S.games[t]++;S.points={A:0,B:0};S.tb=false;finishSet(t)}else S.serve=(S.points.A+S.points.B)%2===1?o:t;log(t);return}
+if(S.golden&&S.points.A===3&&S.points.B===3){S.games[t]++;S.points={A:0,B:0};afterGame(t);log(t);return}
+if(S.points[t]<3){S.points[t]++}else if(S.points[t]===3&&S.points[o]<3){S.games[t]++;S.points={A:0,B:0};afterGame(t)}else if(S.points[t]===3&&S.points[o]===3){S.points[t]=4}else if(S.points[t]===4){S.games[t]++;S.points={A:0,B:0};afterGame(t)}else if(S.points[o]===4){S.points[o]=3}
+log(t)}
+function afterGame(t){S.serve=S.serve==='A'?'B':'A';const o=t==='A'?'B':'A';if(S.games[t]>=6&&S.games[t]-S.games[o]>=2)finishSet(t);else if(S.games.A===6&&S.games.B===6){S.tb=true;S.points={A:0,B:0}}}
+function finishSet(t){S.sets[t]++;S.games={A:0,B:0};S.points={A:0,B:0};S.tb=false;if(S.sets[t]>=requiredWins())wonMatch(t)}
+function rallyServer(){const a=S.players.A,b=S.players.B;const seq=[{team:'A',p:a[0],n:5},{team:'B',p:b[0],n:5},{team:'A',p:a[1],n:5},{team:'B',p:b[1],n:5},{team:'A',p:a[0],n:1}];let x=S.rallyCount;for(const q of seq){if(x<q.n)return q;x-=q.n}return seq[4]}
+function addRally(t){if(S.finished||S.rallyCount>=21)return;snap();S.rally[t]++;S.rallyCount++;log(t);if(S.rallyCount===21){if(S.rally.A===S.rally.B){S.finished=true;S.winner=null;toast('Hasil seri setelah 21 servis')}else wonMatch(S.rally.A>S.rally.B?'A':'B')}}
+function addBad(t){if(S.finished)return;snap();const o=t==='A'?'B':'A';S.bad[t]++;S.serve=t;log(t);if((S.bad[t]>=21&&S.bad[t]-S.bad[o]>=2)||S.bad[t]===30){S.sets[t]++;toast(S.names[t]+' memenangkan game');S.bad={A:0,B:0};if(S.sets[t]>=requiredWins())wonMatch(t)}}
+function add(t){S.mode==='tennis'?addTennis(t):S.mode==='rally'?addRally(t):addBad(t);save();render()}
+function log(t){S.history.unshift(`${new Date().toLocaleTimeString('id-ID',{hour:'2-digit',minute:'2-digit'})} · poin ${S.names[t]}`);S.history=S.history.slice(0,12)}
+function minus(t){if(S.finished)return;snap();if(S.mode==='rally'){if(S.rally[t]>0){S.rally[t]--;S.rallyCount=Math.max(0,S.rallyCount-1)}}else if(S.mode==='badminton'){S.bad[t]=Math.max(0,S.bad[t]-1)}else{S.points[t]=Math.max(0,S.points[t]-1)}save();render()}
+function reset(){if(!confirm('Reset seluruh pertandingan?'))return;const keep={mode:S.mode,names:S.names,players:S.players,bestof:S.bestof,golden:S.golden};S={...fresh(),...keep};save();render()}
+function render(){S.names.A=$('#nameA').value||S.names.A;S.names.B=$('#nameB').value||S.names.B;$('#mode').value=S.mode;$('#bestof').value=S.bestof;$('#golden').value=S.golden?'1':'0';$('#playersA').value=S.players.A.join(', ');$('#playersB').value=S.players.B.join(', ');$('#cardA').classList.toggle('serving',S.serve==='A'&&S.mode!=='rally');$('#cardB').classList.toggle('serving',S.serve==='B'&&S.mode!=='rally');let a,b,sa='',sb='',st='',dt='';
+if(S.mode==='tennis'){a=S.tb?S.points.A:(S.points.A===4?'AD':tennisLabels[S.points.A]);b=S.tb?S.points.B:(S.points.B===4?'AD':tennisLabels[S.points.B]);sa=`Set ${S.sets.A} · Game ${S.games.A}`;sb=`Set ${S.sets.B} · Game ${S.games.B}`;st=S.tb?'Tiebreak':`Servis: ${S.names[S.serve]}`;dt=`${S.golden?'Golden point':'Advantage'} · ${S.bestof===3?'Best of 3':'1 set'}`}
+if(S.mode==='rally'){a=S.rally.A;b=S.rally.B;const q=rallyServer();sa=`${S.rallyCount}/21 rally`;sb=`Sisa ${21-S.rallyCount}`;st=S.rallyCount<21?`Server: ${q.p} (${q.team==='A'?S.names.A:S.names.B})`:'21 servis selesai';const used=[5,10,15,20,21].find(v=>S.rallyCount<v)||21;dt=`Jatah server saat ini: servis ${S.rallyCount+1} sampai ${used}`}
+if(S.mode==='badminton'){a=S.bad.A;b=S.bad.B;sa=`Game ${S.sets.A}`;sb=`Game ${S.sets.B}`;st=`Servis: ${S.names[S.serve]} · sisi ${S.bad[S.serve]%2===0?'kanan':'kiri'}`;dt='21 poin, selisih 2; pada 29–29, poin ke-30 menang'}
+$('#scoreA').textContent=a;$('#scoreB').textContent=b;$('#subA').textContent=sa;$('#subB').textContent=sb;$('#status').innerHTML=S.finished?(S.winner?`<span class="winner">${S.names[S.winner]} menang pertandingan</span>`:'<span class="winner">Pertandingan berakhir seri</span>'):`<strong>${st}</strong>`;$('#detail').textContent=dt;$('#history').innerHTML=S.history.map(x=>'• '+x).join('<br>');save()}
+
+document.querySelectorAll('[data-team]').forEach(b=>b.onclick=()=>add(b.dataset.team));document.querySelectorAll('[data-minus]').forEach(b=>b.onclick=()=>minus(b.dataset.minus));
+$('#mode').onchange=e=>{const m=e.target.value;if(S.mode!==m&&confirm('Ganti mode dan mulai skor baru?')){const keep={names:S.names,players:S.players,bestof:S.bestof,golden:S.golden};S={...fresh(),...keep,mode:m};render()}else e.target.value=S.mode};
+$('#nameA').onchange=e=>{S.names.A=e.target.value||'Tim A';render()};$('#nameB').onchange=e=>{S.names.B=e.target.value||'Tim B';render()};
+$('#playersA').onchange=e=>{const p=e.target.value.split(',').map(x=>x.trim()).filter(Boolean);S.players.A=[p[0]||'A1',p[1]||'A2'];render()};$('#playersB').onchange=e=>{const p=e.target.value.split(',').map(x=>x.trim()).filter(Boolean);S.players.B=[p[0]||'B1',p[1]||'B2'];render()};
+$('#bestof').onchange=e=>{S.bestof=+e.target.value;save()};$('#golden').onchange=e=>{S.golden=e.target.value==='1';save();render()};
+$('#serve').onclick=()=>{S.serve=S.serve==='A'?'B':'A';save();render()};$('#reset').onclick=reset;$('#undo').onclick=()=>{const prev=S.stack.pop();if(prev){const stack=S.stack;S={...prev,stack};save();render()}};
+$('#swap').onclick=()=>{const n=S.names.A;S.names.A=S.names.B;S.names.B=n;const p=S.players.A;S.players.A=S.players.B;S.players.B=p;const swapObj=o=>{const v=o.A;o.A=o.B;o.B=v};swapObj(S.sets);swapObj(S.games);swapObj(S.points);swapObj(S.rally);swapObj(S.bad);S.serve=S.serve==='A'?'B':'A';$('#nameA').value=S.names.A;$('#nameB').value=S.names.B;render()};
+$('#fullscreen').onclick=()=>document.fullscreenElement?document.exitFullscreen():document.documentElement.requestFullscreen?.();
+window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();deferredPrompt=e;$('#install').hidden=false});$('#install').onclick=async()=>{if(deferredPrompt){deferredPrompt.prompt();await deferredPrompt.userChoice;deferredPrompt=null;$('#install').hidden=true}else toast('Safari: Bagikan → Tambahkan ke Layar Utama')};window.addEventListener('appinstalled',()=>toast('Aplikasi berhasil dipasang'));
+if('serviceWorker'in navigator)window.addEventListener('load',()=>navigator.serviceWorker.register('./service-worker.js'));
+$('#nameA').value=S.names.A;$('#nameB').value=S.names.B;render();
+</script></body></html>
